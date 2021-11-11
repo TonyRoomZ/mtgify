@@ -1,12 +1,16 @@
-export PATH=$PATH:/home/ec2-user/.nvm/versions/node/v8.9.1/bin/
-export $(cat .env* | grep -v ^# | xargs)
+# rebuild code, gen everything, upload everything
+
+# https://devimalplanet.com/using-nvm-in-cron-jobs
+# Load nvm
+export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# setup env
+nvm use 10.16.0
+export GOOGLE_APPLICATION_CREDENTIALS="gcp-key.json"
 
 # https://github.com/npm/npm/issues/17722
 npm install
-npm prune
 git checkout -- package-lock.json
 
-npm run build
-node script/upload_s3_code.js
-
-node script/gen_json.js && node script/upload_s3_json.js
+npm run cron-code && npm run cron-json
